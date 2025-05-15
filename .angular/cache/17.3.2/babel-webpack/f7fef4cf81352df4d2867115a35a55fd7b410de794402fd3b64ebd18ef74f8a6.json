@@ -1,0 +1,1 @@
+{"ast":null,"code":"// array in local storage for accounts\n// const accountsKey = '';\nlet accounts = JSON.parse(localStorage.getItem(accountsKey)) || [];\nlocalStorage.removeItem('angular-10-signup-verification-boilerplate-accounts');\nexport {};","map":null,"metadata":{},"sourceType":"module","externalDependencies":[]}

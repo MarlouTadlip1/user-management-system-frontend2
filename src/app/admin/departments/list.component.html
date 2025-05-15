@@ -1,0 +1,36 @@
+<h1>Departments</h1>
+<p>All departments from secure (admin only) api end point:</p>
+<a routerLink="add" class="btn btn-sm btn-success mb-2">Create Department</a>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th style="width:10%">ID</th>
+            <th style="width:25%">Name</th>
+            <th style="width:25%">Description</th>
+            <th style="width:15%" class="text-center">Employees</th>
+            <th style="width:15%">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let department of departments">
+            <td>{{department.id}}</td>
+            <td>{{department.name}}</td>
+            <td>{{department.description}}</td>
+            <td class="text-center">
+                <span class="badge badge-primary">{{getEmployeeCount(department.id)}}</span>
+            </td>
+            <td style="white-space: nowrap">
+                <a routerLink="edit/{{department.id}}" class="btn btn-sm btn-primary mr-1">Edit</a>
+                <button (click)="deleteDepartment(department.id)" class="btn btn-sm btn-danger btn-delete-account" [disabled]="department.isDeleting">
+                    <span *ngIf="department.isDeleting" class="spinner-border spinner-border-sm"></span>
+                    <span *ngIf="!department.isDeleting">Delete</span>  
+                </button>
+            </td>
+        </tr>
+        <tr *ngIf="!departments">
+            <td colspan="5" class="text-center">
+                <span class="spinner-border spinner-border-lg align-center"></span>
+            </td>
+        </tr>
+    </tbody>
+</table>

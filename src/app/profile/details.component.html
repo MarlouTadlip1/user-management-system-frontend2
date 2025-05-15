@@ -1,0 +1,8 @@
+﻿<h1>My Profile</h1>
+<p>
+    <strong>Name: </strong> {{account.title}} {{account.firstName}} {{account.lastName}}<br />
+    <strong>Email: </strong> {{account.email}}<br />
+    <strong>Role: </strong> {{account.role}}<br />
+    <strong>Status: </strong> {{account.isActive ? 'Active' : 'Inactive'}}
+</p>
+<p><a routerLink="update">Update Profile</a></p>
