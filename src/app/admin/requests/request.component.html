@@ -21,13 +21,19 @@
           <td>{{ request.employeeId }}</td>
           <td>
             <ul>
-              <li *ngFor="let item of request.items">{{ item.name }} (x{{ item.quantity }})</li>
+              <li *ngFor="let item of request.items">
+                {{ item.name }} (x{{ item.quantity }})
+              </li>
             </ul>
           </td>
-          <td>{{ request.status || 'Pending' }}</td>
+          <td>{{ request.status || "Pending" }}</td>
           <td>
-            <button class="btn btn-warning btn-sm" (click)="edit(request.id)">Edit</button>
-            <button class="btn btn-danger btn-sm" (click)="delete(request.id)">Delete</button>
+            <button class="btn btn-warning btn-sm" (click)="edit(request.id)">
+              Edit
+            </button>
+            <button class="btn btn-danger btn-sm" (click)="delete(request.id)">
+              Delete
+            </button>
           </td>
         </tr>
         <tr *ngIf="!requests.length">
@@ -39,7 +45,13 @@
 </div>
 
 <!-- Modal -->
-<div class="modal" [ngClass]="{ 'show d-block': showModal }" tabindex="-1" role="dialog" *ngIf="showModal">
+<div
+  class="modal"
+  [ngClass]="{ 'show d-block': showModal }"
+  tabindex="-1"
+  role="dialog"
+  *ngIf="showModal"
+>
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <form [formGroup]="requestForm" (ngSubmit)="save()">
@@ -58,31 +70,74 @@
           </div>
 
           <div class="mb-3">
-            <label>Employee ID</label>
-            <input formControlName="employeeId" class="form-control" />
+            <label>Employee</label>
+            <select formControlName="employeeId" class="form-control">
+              <option value="">Select employee</option>
+              <option
+                *ngFor="let employee of employees"
+                [value]="employee.employeeId"
+              >
+                {{ employee.employeeId || "Unknown" }}
+              </option>
+            </select>
           </div>
 
           <div class="mb-2">
             <label>Items</label>
             <div formArrayName="items">
-              <div *ngFor="let item of items.controls; let i = index" [formGroupName]="i" class="row g-2 align-items-center mb-2">
+              <div
+                *ngFor="let item of items.controls; let i = index"
+                [formGroupName]="i"
+                class="row g-2 align-items-center mb-2"
+              >
                 <div class="col">
-                  <input type="text" formControlName="name" placeholder="Item Name" class="form-control" />
+                  <input
+                    type="text"
+                    formControlName="name"
+                    placeholder="Item Name"
+                    class="form-control"
+                  />
                 </div>
                 <div class="col-3">
-                  <input type="number" formControlName="quantity" placeholder="Qty" class="form-control" min="1" />
+                  <input
+                    type="number"
+                    formControlName="quantity"
+                    placeholder="Qty"
+                    class="form-control"
+                    min="1"
+                  />
                 </div>
                 <div class="col-auto">
-                  <button class="btn btn-danger btn-sm" type="button" (click)="removeItem(i)">Remove</button>
+                  <button
+                    class="btn btn-danger btn-sm"
+                    type="button"
+                    (click)="removeItem(i)"
+                  >
+                    Remove
+                  </button>
                 </div>
               </div>
             </div>
-            <button class="btn btn-secondary btn-sm mt-2" type="button" (click)="addItem()">Add Item</button>
+            <button
+              class="btn btn-secondary btn-sm mt-2"
+              type="button"
+              (click)="addItem()"
+            >
+              Add Item
+            </button>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn btn-primary" [disabled]="requestForm.invalid">Save</button>
-          <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="requestForm.invalid"
+          >
+            Save
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="cancel()">
+            Cancel
+          </button>
         </div>
       </form>
     </div>

@@ -45,7 +45,7 @@ export class AddEditComponent implements OnInit {
       departmentId: ['', [Validators.required]],
       position: ['', [Validators.required]],
       hireDate: ['', [Validators.required]],
-      isActive: [true]
+      isActive: [true],
     });
 
     // Load accounts and departments
@@ -58,20 +58,24 @@ export class AddEditComponent implements OnInit {
   }
 
   private loadAccounts() {
-    this.accountService.getAll()
+    this.accountService
+      .getAll()
       .pipe(first())
       .subscribe({
         next: (accounts) => {
-          this.accounts = accounts;
+          this.accounts = accounts.filter(
+            (account) => account.isActive === true
+          );
         },
         error: (error) => {
           this.alertService.error(error);
-        }
+        },
       });
   }
 
   private loadDepartments() {
-    this.departmentService.getAll()
+    this.departmentService
+      .getAll()
       .pipe(first())
       .subscribe({
         next: (departments) => {
@@ -79,12 +83,13 @@ export class AddEditComponent implements OnInit {
         },
         error: (error) => {
           this.alertService.error(error);
-        }
+        },
       });
   }
 
   private loadEmployee() {
-    this.employeeService.getById(this.id)
+    this.employeeService
+      .getById(this.id)
       .pipe(first())
       .subscribe({
         next: (employee) => {
@@ -92,12 +97,14 @@ export class AddEditComponent implements OnInit {
         },
         error: (error) => {
           this.alertService.error(error);
-        }
+        },
       });
   }
 
   // convenience getter for easy access to form fields
-  get f() { return this.form.controls; }
+  get f() {
+    return this.form.controls;
+  }
 
   onSubmit() {
     this.submitted = true;
@@ -119,32 +126,38 @@ export class AddEditComponent implements OnInit {
   }
 
   private createEmployee() {
-    this.employeeService.create(this.form.value)
+    this.employeeService
+      .create(this.form.value)
       .pipe(first())
       .subscribe({
         next: () => {
-          this.alertService.success('Employee created successfully', { keepAfterRouteChange: true });
+          this.alertService.success('Employee created successfully', {
+            keepAfterRouteChange: true,
+          });
           this.router.navigate(['/admin/employees']);
         },
-        error: error => {
+        error: (error) => {
           this.alertService.error(error);
           this.loading = false;
-        }
+        },
       });
   }
 
   private updateEmployee() {
-    this.employeeService.update(this.id, this.form.value)
+    this.employeeService
+      .update(this.id, this.form.value)
       .pipe(first())
       .subscribe({
         next: () => {
-          this.alertService.success('Update successful', { keepAfterRouteChange: true });
+          this.alertService.success('Update successful', {
+            keepAfterRouteChange: true,
+          });
           this.router.navigate(['/admin/employees']);
         },
-        error: error => {
+        error: (error) => {
           this.alertService.error(error);
           this.loading = false;
-        }
+        },
       });
   }
 }
