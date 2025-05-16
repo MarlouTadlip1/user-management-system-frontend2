@@ -1,4 +1,4 @@
-﻿<div class="app-container" [ngClass]="{ 'bg-light': account }">
+﻿﻿<div class="app-container" [ngClass]="{ 'bg-light': account }">
     <!-- main nav -->
     <nav class="navbar navbar-expand navbar-dark bg-dark" *ngIf="account">
         <div class="navbar-nav">
@@ -13,7 +13,7 @@
     <router-outlet name="subnav"></router-outlet>
 
     <!-- global alert -->
-    <alert></alert>
+
 
     <!-- main router outlet -->
     <router-outlet></router-outlet>

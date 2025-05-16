@@ -1,16 +1,13 @@
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
-import { ListComponent } from './list.component';
-
+import { RouterModule, Routes } from '@angular/router';
+import { RequestComponent } from './request.component';
 
 const routes: Routes = [
-    { path: '', component: ListComponent },
-    // { path: 'add', component: AddEditComponent },
-    // { path: 'edit/:id', component: AddEditComponent }
+  { path: '', component: RequestComponent },
 ];
 
 @NgModule({
-    imports: [RouterModule.forChild(routes)],
-    exports: [RouterModule]
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
 })
-export class RequestsRoutingModule { }
+export class RequestRoutingModule {}

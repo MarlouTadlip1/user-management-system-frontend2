@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@angular/core';
+﻿﻿import { Injectable } from '@angular/core';
 import { HttpRequest, HttpResponse, HttpHandler, HttpEvent, HttpInterceptor, HTTP_INTERCEPTORS, HttpHeaders } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { delay, materialize, dematerialize } from 'rxjs/operators';
@@ -23,6 +23,10 @@ let employees = storedEmployees ? JSON.parse(storedEmployees) : [];
 const workflowsKey = 'angular-19-verification-boilerplate-workflows';
 const storedWorkflows = localStorage.getItem(workflowsKey);
 let workflows: any[] = storedWorkflows ? JSON.parse(storedWorkflows) : [];
+
+// Define missing variables
+const requestsKey = 'requests';
+const requests = JSON.parse(localStorage.getItem(requestsKey) || '[]');
 
 @Injectable()
 export class FakeBackendInterceptor implements HttpInterceptor {
@@ -87,6 +91,34 @@ export class FakeBackendInterceptor implements HttpInterceptor {
                     return deleteEmployee();
                 case url.match(/\/employees\/\d+$/) && method === 'PATCH':
                     return transferEmployee();
+                case url.match(/\/requests\/\d+$/) && method === 'PUT':
+                    const requestUpdateId = idFromUrl();
+                    const updateIndex = requests.findIndex((x: any) => x.id === requestUpdateId);
+                    if (updateIndex === -1) return error('Request not found');
+                    requests[updateIndex] = { ...requests[updateIndex], ...body };
+                    localStorage.setItem(requestsKey, JSON.stringify(requests));
+                    return ok(requests[updateIndex]);
+                case url.match(/\/requests\/\d+$/) && method === 'GET':
+                    return getRequestById();
+                case url.endsWith('/requests') && method === 'POST':
+                    const newRequest = body;
+                    newRequest.id = requests.length ? Math.max(...requests.map(x => x.id)) + 1 : 1;
+                    newRequest.created = new Date().toISOString();
+                    newRequest.updated = new Date().toISOString();
+                    requests.push(newRequest);
+
+                    // Debug logs
+                    console.log('New request:', newRequest);
+                    console.log('Requests after save:', requests);
+
+                    localStorage.setItem(requestsKey, JSON.stringify(requests));
+                    return ok(newRequest);
+
+                case url.endsWith('/requests') && method === 'GET':
+                    // Debug logs
+                    console.log('Returning requests:', requests);
+                    return ok(requests);
+
                 // Workflow endpoints
                 case url.match(/\/api\/workflows\/\d+$/) && method === 'GET':
                     const workflowUrlParts = url.split('/');
@@ -114,9 +146,9 @@ export class FakeBackendInterceptor implements HttpInterceptor {
                     return ok(newWorkflow);
                 case url.match(/\/api\/workflows\/\d+$/) && method === 'PUT':
                     const updateUrlParts = url.split('/');
-                    const updateId = updateUrlParts[updateUrlParts.length - 1];
+                    const workflowUpdateId = updateUrlParts[updateUrlParts.length - 1];
                     const params = body;
-                    const workflowToUpdate = workflows.find(x => x.id.toString() === updateId);
+                    const workflowToUpdate = workflows.find(x => x.id.toString() === workflowUpdateId);
                     if (!workflowToUpdate) {
                         return error('Workflow not found');
                     }
@@ -124,14 +156,21 @@ export class FakeBackendInterceptor implements HttpInterceptor {
                     workflowToUpdate.dateUpdated = new Date().toISOString();
                     localStorage.setItem(workflowsKey, JSON.stringify(workflows));
                     return ok(workflowToUpdate);
+                case url.match(/\/requests\/\d+$/) && method === 'DELETE':
+                    const deleteRequestId = idFromUrl();
+                    const index = requests.findIndex((x: any) => x.id === deleteRequestId);
+                    if (index === -1) return error('Request not found');
+                    requests.splice(index, 1);
+                    localStorage.setItem(requestsKey, JSON.stringify(requests));
+                    return ok();
                 case url.match(/\/api\/workflows\/\d+$/) && method === 'DELETE':
                     const deleteUrlParts = url.split('/');
-                    const deleteId = deleteUrlParts[deleteUrlParts.length - 1];
-                    const workflowToDelete = workflows.find(x => x.id.toString() === deleteId);
+                    const deleteWorkflowId = deleteUrlParts[deleteUrlParts.length - 1];
+                    const workflowToDelete = workflows.find(x => x.id.toString() === deleteWorkflowId);
                     if (!workflowToDelete) {
                         return error('Workflow not found');
                     }
-                    workflows = workflows.filter(x => x.id.toString() !== deleteId);
+                    workflows = workflows.filter(x => x.id.toString() !== deleteWorkflowId);
                     localStorage.setItem(workflowsKey, JSON.stringify(workflows));
                     return ok();
                 default:
@@ -667,6 +706,35 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             localStorage.setItem(employeeKey, JSON.stringify(employees));
 
             return ok(basicDetails('employees', employee));
+        }
+
+        // Update a request
+        function updateRequest() {
+            const id = idFromUrl();
+            const index = requests.findIndex((x: any) => x.id === id);
+            if (index === -1) return error('Request not found');
+
+            const body = getRequestBody(); // Simulate getting the request body
+            const updatedRequest = { ...requests[index], ...body };
+            requests[index] = updatedRequest;
+            localStorage.setItem(requestsKey, JSON.stringify(requests));
+            return ok(updatedRequest);
+        }
+
+        // Get a request by ID
+        function getRequestById() {
+            const id = idFromUrl();
+            const request = requests.find((x: any) => x.id === id);
+            if (!request) return error('Request not found');
+            return ok(request);
+        }
+
+        // Extract ID from URL
+        // Removed duplicate implementation of idFromUrl
+
+        // Simulate getting the request body (replace with actual implementation)
+        function getRequestBody() {
+            return { status: 'Updated' }; // Example body
         }
     }
 }

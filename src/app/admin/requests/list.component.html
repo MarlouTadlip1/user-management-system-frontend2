@@ -1,1 +1,46 @@
-<h1></h1>
+<div class="card">
+  <div class="card-header">Requests</div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Employee</th>
+            <th>Items</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let request of requests">
+            <td>{{ request.type }}</td>
+            <td>{{ request.employee?.employeeId }}</td>
+            <td>
+              <ul>
+                <li *ngFor="let item of request.requestItems">
+                  {{ item.name }} (x{{ item.quantity }})
+                </li>
+              </ul>
+            </td>
+            <td>
+              <span class="badge" 
+                    [ngClass]="{
+                      'badge-success': request.status === 'Approved',
+                      'badge-danger': request.status === 'Rejected',
+                      'badge-warning': request.status === 'Pending'
+                    }">
+                {{ request.status }}
+              </span>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-primary me-1" (click)="edit(request.id)">Edit</button>
+              <button class="btn btn-sm btn-danger" (click)="delete(request.id)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <button class="btn btn-primary float-end mt-3" (click)="add()">Add Request</button>
+  </div>
+</div>

@@ -1,0 +1,90 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>Requests</span>
+    <button class="btn btn-primary btn-sm" (click)="add()">Add Request</button>
+  </div>
+
+  <div class="card-body">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Employee</th>
+          <th>Items</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let request of requests">
+          <td>{{ request.type }}</td>
+          <td>{{ request.employeeId }}</td>
+          <td>
+            <ul>
+              <li *ngFor="let item of request.items">{{ item.name }} (x{{ item.quantity }})</li>
+            </ul>
+          </td>
+          <td>{{ request.status || 'Pending' }}</td>
+          <td>
+            <button class="btn btn-warning btn-sm" (click)="edit(request.id)">Edit</button>
+            <button class="btn btn-danger btn-sm" (click)="delete(request.id)">Delete</button>
+          </td>
+        </tr>
+        <tr *ngIf="!requests.length">
+          <td colspan="5" class="text-center">No requests found</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" [ngClass]="{ 'show d-block': showModal }" tabindex="-1" role="dialog" *ngIf="showModal">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <form [formGroup]="requestForm" (ngSubmit)="save()">
+        <div class="modal-header">
+          <h5 class="modal-title">Add Request</h5>
+          <button type="button" class="btn-close" (click)="cancel()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label>Type</label>
+            <select formControlName="type" class="form-control">
+              <option value="">Select type</option>
+              <option value="Equipment">Equipment</option>
+              <option value="Supplies">Supplies</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label>Employee ID</label>
+            <input formControlName="employeeId" class="form-control" />
+          </div>
+
+          <div class="mb-2">
+            <label>Items</label>
+            <div formArrayName="items">
+              <div *ngFor="let item of items.controls; let i = index" [formGroupName]="i" class="row g-2 align-items-center mb-2">
+                <div class="col">
+                  <input type="text" formControlName="name" placeholder="Item Name" class="form-control" />
+                </div>
+                <div class="col-3">
+                  <input type="number" formControlName="quantity" placeholder="Qty" class="form-control" min="1" />
+                </div>
+                <div class="col-auto">
+                  <button class="btn btn-danger btn-sm" type="button" (click)="removeItem(i)">Remove</button>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm mt-2" type="button" (click)="addItem()">Add Item</button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary" [disabled]="requestForm.invalid">Save</button>
+          <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
