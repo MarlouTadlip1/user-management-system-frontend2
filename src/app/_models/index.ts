@@ -4,4 +4,3 @@ export * from './account';
 export * from './department';
 export * from './alert';
 export * from './role';
-export * from './workflow-type.enum';

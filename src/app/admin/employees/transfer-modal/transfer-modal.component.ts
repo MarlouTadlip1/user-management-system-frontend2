@@ -9,15 +9,14 @@ import { Department } from '@app/_models/department';
 
 @Component({
   selector: 'app-transfer-modal',
-  templateUrl: './transfer-modal.component.html'
-  
+  templateUrl: './transfer-modal.component.html',
 })
 export class TransferModalComponent implements OnInit {
-  @Input() employee: Employee;
+  @Input() employee!: Employee; // Use non-null assertion since employee is required
   @Output() close = new EventEmitter<void>();
   @Output() transferComplete = new EventEmitter<void>();
 
-  form: FormGroup;
+  form!: FormGroup;
   loading = false;
   submitted = false;
   departments: Department[] = [];
@@ -27,7 +26,7 @@ export class TransferModalComponent implements OnInit {
     private employeeService: EmployeeService,
     private departmentService: DepartmentService,
     private alertService: AlertService
-  ) { }
+  ) {}
 
   ngOnInit() {
     if (!this.employee || !this.employee.id) {
@@ -38,11 +37,15 @@ export class TransferModalComponent implements OnInit {
     }
 
     this.form = this.formBuilder.group({
-      departmentId: [this.employee.departmentId || '', Validators.required]
+      departmentId: [
+        this.employee.departmentId.toString(),
+        Validators.required,
+      ], // Convert to string for form
     });
 
     // Load departments
-    this.departmentService.getAll()
+    this.departmentService
+      .getAll()
       .pipe(first())
       .subscribe({
         next: (departments) => {
@@ -55,12 +58,14 @@ export class TransferModalComponent implements OnInit {
         error: (error) => {
           console.error('Error loading departments:', error);
           this.alertService.error('Error loading departments');
-        }
+        },
       });
   }
 
   // convenience getter for easy access to form fields
-  get f() { return this.form.controls; }
+  get f() {
+    return this.form.controls;
+  }
 
   onSubmit() {
     this.submitted = true;
@@ -79,9 +84,9 @@ export class TransferModalComponent implements OnInit {
       return;
     }
 
-    const newDepartmentId = this.f.departmentId.value;
-    if (!newDepartmentId) {
-      this.alertService.error('Please select a department');
+    const newDepartmentId = parseInt(this.f.departmentId.value, 10); // Convert to number
+    if (isNaN(newDepartmentId)) {
+      this.alertService.error('Invalid department selected');
       return;
     }
 
@@ -92,13 +97,14 @@ export class TransferModalComponent implements OnInit {
     }
 
     this.loading = true;
-    this.employeeService.transferDepartment(
-      this.employee.id,
-      newDepartmentId
-    )
+    this.employeeService
+      .transferDepartment(
+        this.employee.id,
+        newDepartmentId.toString() // Pass as string, handled in service
+      )
       .pipe(
         first(),
-        switchMap(response => {
+        switchMap((response) => {
           console.log('Transfer successful:', response);
           return this.employeeService.getById(this.employee.id);
         })
@@ -106,19 +112,21 @@ export class TransferModalComponent implements OnInit {
       .subscribe({
         next: (updatedEmployee) => {
           console.log('Updated employee data:', updatedEmployee);
-          this.alertService.success('Employee transferred successfully');
+          // Success message is handled in EmployeeService
           this.transferComplete.emit();
           this.close.emit();
         },
         error: (error) => {
           console.error('Transfer error:', error);
-          this.alertService.error(error?.message || 'Error transferring employee');
+          this.alertService.error(
+            error?.message || 'Error transferring employee'
+          );
           this.loading = false;
-        }
+        },
       });
   }
 
   onClose() {
     this.close.emit();
   }
-} 
+}
