@@ -41,7 +41,7 @@ export class AddEditComponent implements OnInit {
     // Initialize form with default values
     this.form = this.formBuilder.group({
       userId: ['', [Validators.required]],
-      employeeId: ['', [Validators.required]],
+      employeeId: ['', [Validators.required]], // This is the display ID (e.g., EMP-01)
       departmentId: ['', [Validators.required]],
       position: ['', [Validators.required]],
       hireDate: ['', [Validators.required]],
@@ -93,7 +93,11 @@ export class AddEditComponent implements OnInit {
       .pipe(first())
       .subscribe({
         next: (employee) => {
-          this.form.patchValue(employee);
+          this.form.patchValue({
+            ...employee,
+            departmentId: employee.departmentId.toString(), // Ensure string for form
+            userId: employee.userId.toString(), // Ensure string for form
+          });
         },
         error: (error) => {
           this.alertService.error(error);
@@ -118,22 +122,26 @@ export class AddEditComponent implements OnInit {
     }
 
     this.loading = true;
+    const formValue = {
+      ...this.form.value,
+      departmentId: parseInt(this.form.value.departmentId, 10), // Convert to integer
+      userId: parseInt(this.form.value.userId, 10), // Convert to integer
+    };
+
     if (this.isAddMode) {
-      this.createEmployee();
+      this.createEmployee(formValue);
     } else {
-      this.updateEmployee();
+      this.updateEmployee(formValue);
     }
   }
 
-  private createEmployee() {
+  private createEmployee(formValue: any) {
     this.employeeService
-      .create(this.form.value)
+      .create(formValue)
       .pipe(first())
       .subscribe({
         next: () => {
-          this.alertService.success('Employee created successfully', {
-            keepAfterRouteChange: true,
-          });
+          // Success message is handled in EmployeeService
           this.router.navigate(['/admin/employees']);
         },
         error: (error) => {
@@ -143,9 +151,9 @@ export class AddEditComponent implements OnInit {
       });
   }
 
-  private updateEmployee() {
+  private updateEmployee(formValue: any) {
     this.employeeService
-      .update(this.id, this.form.value)
+      .update(this.id, formValue)
       .pipe(first())
       .subscribe({
         next: () => {

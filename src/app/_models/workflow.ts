@@ -1,38 +1,46 @@
-import { Employee } from '@app/_models';
-import { WorkflowType, WorkflowStatus } from './workflow-type.enum';
-
-export interface Workflow {
-    id: string;
-    type: WorkflowType;
-    details: string;
-    status: WorkflowStatus;
-    employeeId: string;
-    dateCreated: string;
-    dateUpdated: string;
-    employee?: Employee;
-    comments?: WorkflowComment[];
-    attachments?: WorkflowAttachment[];
-    approverId?: string;
-    approverName?: string;
-    approvalDate?: string;
-    rejectionReason?: string;
+export class Workflow {
+  id: string;
+  employeeId: string;
+  type: string;
+  details?: any; // Json in Prisma
+  status: string;
+  createdById: number;
+  created: string; // ISO string
+  updated: string; // ISO string
+  employee?: {
+    id: number;
+    employeeId: string; // e.g., EMP-01
+    position: string;
+    hireDate: string; // ISO string
+    isActive: boolean;
+    userId?: number;
+    departmentId?: number;
+  };
+  createdBy?: {
+    id: number;
+    title: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: string;
+    dateCreated: string; // ISO string
+    isVerified: boolean;
+    isActive: boolean;
+  };
 }
 
-export interface WorkflowComment {
-    id: string;
-    workflowId: string;
-    userId: string;
-    userName: string;
-    comment: string;
-    dateCreated: string;
+export enum WorkflowType {
+  PROMOTION = 'Promotion',
+  TRANSFER = 'Transfer',
+  TERMINATION = 'Termination',
+  OTHER = 'Other',
+  ONBOARDING = 'Onboarding',
 }
 
-export interface WorkflowAttachment {
-    id: string;
-    workflowId: string;
-    fileName: string;
-    fileType: string;
-    fileSize: number;
-    uploadDate: string;
-    uploadedBy: string;
-} 
+export enum WorkflowStatus {
+  PENDING = 'Pending',
+  IN_PROGRESS = 'In Progress',
+  APPROVED = 'Approved',
+  REJECTED = 'Rejected',
+  COMPLETED = 'Completed',
+}

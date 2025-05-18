@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { environment } from '@environments/environment';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { map, finalize, catchError, switchMap } from 'rxjs/operators';
+import { map, catchError, switchMap } from 'rxjs/operators';
 import { Employee } from '../_models/employee';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { AlertService } from './alert.service';
+import { WorkflowService } from './workflow.service';
 
 const baseUrl = `${environment.apiUrl}/employees`;
 
@@ -15,7 +16,11 @@ export class EmployeeService {
   public employee: Observable<Employee | null> =
     this.employeeSubject.asObservable();
 
-  constructor(private http: HttpClient, private alertService: AlertService) {}
+  constructor(
+    private http: HttpClient,
+    private alertService: AlertService,
+    private workflowService: WorkflowService
+  ) {}
 
   private handleError(error: HttpErrorResponse) {
     this.alertService.error('An error occurred', { autoClose: false });
@@ -28,12 +33,35 @@ export class EmployeeService {
 
   create(params: any) {
     return this.http.post<Employee>(baseUrl, params).pipe(
-      map((employee) => {
+      switchMap((employee) => {
         this.employeeSubject.next(employee);
-        this.alertService.success('Employee created successfully', {
-          autoClose: false,
-        });
-        return employee;
+        // Create Onboarding workflow
+        const workflowParams = {
+          type: 'Onboarding',
+          details: JSON.stringify({
+            step: 'Initial onboarding',
+            description: `Onboarding process for ${employee.employeeId}`,
+          }),
+          status: 'Pending',
+          employeeId: employee.id, // Convert to number
+        };
+        return this.workflowService.create(workflowParams).pipe(
+          map(() => {
+            this.alertService.success(
+              'Employee and onboarding workflow created successfully',
+              {
+                autoClose: false,
+              }
+            );
+            return employee;
+          }),
+          catchError((workflowError) => {
+            this.alertService.error(
+              'Employee created but failed to create onboarding workflow'
+            );
+            return throwError(workflowError);
+          })
+        );
       }),
       catchError((error) => {
         return this.handleError(error);
@@ -87,17 +115,42 @@ export class EmployeeService {
   }
 
   transferDepartment(employeeId: string, newDepartmentId: string) {
-    // First get the current employee data
     return this.getById(employeeId).pipe(
       switchMap((currentEmployee) => {
-        // Create update data with current employee data plus new department
         const updateData = {
           ...currentEmployee,
-          departmentId: newDepartmentId,
+          departmentId: parseInt(newDepartmentId, 10), // Convert to number
         };
-
-        // Use PUT to update the employee
-        return this.update(employeeId, updateData);
+        return this.update(employeeId, updateData).pipe(
+          switchMap((updatedEmployee) => {
+            // Create Department Transfer workflow
+            const workflowParams = {
+              type: 'DepartmentTransfer',
+              details: JSON.stringify({
+                fromDepartmentId: currentEmployee.departmentId,
+                toDepartmentId: parseInt(newDepartmentId, 10),
+                description: `Transferred employee ${currentEmployee.employeeId} to ${newDepartmentId}`,
+              }),
+              status: 'Pending',
+              employeeId: employeeId, // Keep as string
+            };
+            return this.workflowService.create(workflowParams).pipe(
+              map(() => {
+                this.alertService.success(
+                  'Employee transferred and workflow created successfully',
+                  { autoClose: false }
+                );
+                return updatedEmployee;
+              }),
+              catchError((workflowError) => {
+                this.alertService.error(
+                  'Employee transferred but failed to create transfer workflow'
+                );
+                return throwError(workflowError);
+              })
+            );
+          })
+        );
       })
     );
   }
