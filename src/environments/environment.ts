@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:4000',
+  apiUrl: 'https://user-management-system-backend-0ynv.onrender.com/',
 };
 
 /*
